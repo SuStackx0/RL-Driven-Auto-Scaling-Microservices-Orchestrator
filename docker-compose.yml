@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  service1:
+    build:
+      context: ./services/service1
+      dockerfile: Dockerfile
+    container_name: service1
+    ports:
+      - "8050:8050"
+    restart: always
+
+  service2:
+    build:
+      context: ./services/service2
+      dockerfile: Dockerfile
+    container_name: service2
+    ports:
+      - "8051:8051"
+    restart: always
+
+  service3:
+    build:
+      context: ./services/service3
+      dockerfile: Dockerfile
+    container_name: service3
+    ports:
+      - "8052:8052"
+    restart: always
+
+  service4:
+    build:
+      context: ./services/service4
+      dockerfile: Dockerfile
+    container_name: service4
+    ports:
+      - "8053:8053"
+    restart: always
