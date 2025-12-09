@@ -17,7 +17,7 @@ def process_payment(
     user_id: int = Query(...),
     amount: float = Query(..., gt=0)
 ):
-    # 10% chance of failure
+
     if random.random() < 0.10:
         return {"status": "failed", "reason": "payment_gateway_error"}
 
