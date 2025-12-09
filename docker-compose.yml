@@ -3,36 +3,36 @@ version: "3.9"
 services:
   service1:
     build:
-      context: ./services/service1
+      context: ./services/search
       dockerfile: Dockerfile
-    container_name: service1
+    container_name: search
     ports:
       - "8050:8050"
     restart: always
 
   service2:
     build:
-      context: ./services/service2
+      context: ./services/recommendation
       dockerfile: Dockerfile
-    container_name: service2
+    container_name: recommendation
     ports:
       - "8051:8051"
     restart: always
 
   service3:
     build:
-      context: ./services/service3
+      context: ./services/payment
       dockerfile: Dockerfile
-    container_name: service3
+    container_name: payment
     ports:
       - "8052:8052"
     restart: always
 
   service4:
     build:
-      context: ./services/service4
+      context: ./services/auth
       dockerfile: Dockerfile
-    container_name: service4
+    container_name: auth
     ports:
       - "8053:8053"
     restart: always
