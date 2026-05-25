@@ -1,38 +1,139 @@
-version: "3.9"
+networks:
+  app_net:
+    driver: bridge
 
 services:
-  service1:
+
+  # ── Core microservices ────────────────────────────────────────────────────
+
+  search:
     build:
       context: ./services/search
       dockerfile: Dockerfile
     container_name: search
     ports:
       - "8050:8050"
-    restart: always
+    networks:
+      - app_net
+    restart: unless-stopped
 
-  service2:
+  recommendation:
     build:
       context: ./services/recommendation
       dockerfile: Dockerfile
     container_name: recommendation
     ports:
       - "8051:8051"
-    restart: always
+    networks:
+      - app_net
+    restart: unless-stopped
 
-  service3:
+  payment:
     build:
       context: ./services/payment
       dockerfile: Dockerfile
     container_name: payment
     ports:
       - "8052:8052"
-    restart: always
+    networks:
+      - app_net
+    restart: unless-stopped
 
-  service4:
+  auth:
     build:
       context: ./services/auth
       dockerfile: Dockerfile
     container_name: auth
     ports:
       - "8053:8053"
-    restart: always
+    networks:
+      - app_net
+    restart: unless-stopped
+
+  # ── API Gateway ───────────────────────────────────────────────────────────
+
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      - "8040:8040"
+    networks:
+      - app_net
+    depends_on:
+      - search
+      - recommendation
+      - payment
+      - auth
+      - metrics_collector
+    restart: unless-stopped
+
+  # ── Metrics collector ─────────────────────────────────────────────────────
+
+  metrics_collector:
+    build:
+      context: ./services/metrics_collector
+      dockerfile: Dockerfile
+    container_name: metrics_collector
+    ports:
+      - "8060:8060"
+    networks:
+      - app_net
+    restart: unless-stopped
+
+  # ── RL Agent ──────────────────────────────────────────────────────────────
+
+  rl_agent:
+    build:
+      context: ./services/rl_agent
+      dockerfile: Dockerfile
+    container_name: rl_agent
+    ports:
+      - "8070:8070"
+    networks:
+      - app_net
+    depends_on:
+      - metrics_collector
+    environment:
+      - METRICS_URL=http://metrics_collector:8060
+      - POLL_INTERVAL=5
+    volumes:
+      - rl_models:/app/models
+    restart: unless-stopped
+
+  # ── Dashboard ─────────────────────────────────────────────────────────────
+
+  dashboard:
+    build:
+      context: ./services/dashboard
+      dockerfile: Dockerfile
+    container_name: dashboard
+    ports:
+      - "8501:8501"
+    networks:
+      - app_net
+    depends_on:
+      - metrics_collector
+      - rl_agent
+    restart: unless-stopped
+
+  # ── Load simulator ────────────────────────────────────────────────────────
+
+  load_simulator:
+    build:
+      context: ./services/load_simulator
+      dockerfile: Dockerfile
+    container_name: load_simulator
+    ports:
+      - "8080:8080"
+    networks:
+      - app_net
+    depends_on:
+      - gateway
+    environment:
+      - GATEWAY_URL=http://gateway:8040
+    restart: unless-stopped
+
+volumes:
+  rl_models:
